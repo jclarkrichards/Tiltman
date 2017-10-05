@@ -12,9 +12,10 @@ public enum direction
     NONE
 }*/
 
-// This is basically the NodeGroup class
+// This is basically the Pacman class
 public class AccelerometerTilt : MonoBehaviour
 {
+    public static AccelerometerTilt S;
     //public GameObject[] nodesObjects;
     
     //Node[] nodes; // Contains all of the nodes
@@ -24,9 +25,15 @@ public class AccelerometerTilt : MonoBehaviour
     Node target;
     direction tiltDirection = direction.NONE;
     bool overshot_target = true;
+    float speed = 5;
 
-	// Use this for initialization
-	void Start ()
+    private void Awake()
+    {
+        S = this;
+    }
+
+    // Use this for initialization
+    void Start ()
     {
         //print("So many nodes to choose from");
         //print(NodeGroup.S.nodelist.Count);
@@ -113,7 +120,7 @@ public class AccelerometerTilt : MonoBehaviour
         //print(xAxis + "   " + yAxis);
         dirvec = GetDirectionVector(dir);
         Vector3 pos = transform.position;
-        pos += dirvec * 2 * Time.deltaTime;
+        pos += dirvec * speed * Time.deltaTime;
         transform.position = pos;
 		
 	}

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class Ghost : MonoBehaviour
 {
@@ -8,12 +9,19 @@ public class Ghost : MonoBehaviour
     Vector3 dirvec = new Vector3();
     Node node;
     Node target;
+    Vector3 goal = new Vector3();
     bool overshot_target = true;
     List<direction> validDirections = new List<direction>();
+    float speed = 5;
+    Stack<Mode> modes = new Stack<Mode>();
+    Mode mode;
+    float modeTimer = 0;
 
     // Use this for initialization
     void Start ()
     {
+        SetupModeStack();
+        mode = modes.Pop();
         node = NodeGroup.S.nodelist[6];
         target = NodeGroup.S.nodelist[6];
         transform.position = node.position;
@@ -23,6 +31,19 @@ public class Ghost : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
+        dirvec = GetDirectionVector(dir);
+        Vector3 pos = transform.position;
+        pos += dirvec * speed * Time.deltaTime;
+        transform.position = pos;
+        ModeUpdate(Time.deltaTime);
+        if (mode.name == "CHASE")
+        {
+            SetChaseGoal();
+        }
+        else if (mode.name == "SCATTER")
+        {
+            SetScatterGoal();
+        }
         //tiltDirection = GetTiltDirection();  // Direction the player is indicating
 
         // If we are stopped on a Node
@@ -63,7 +84,8 @@ public class Ghost : MonoBehaviour
                 transform.position = node.position;
             }
             GetValidDirections();
-            dir = RandomDirection(validDirections);
+            dir = GetClosestDirection();
+            //dir = RandomDirection(validDirections);
             transform.position = node.position;
             //target = node.neighbors[dir];
             // Should we continue in this direction or stop?
@@ -97,10 +119,7 @@ public class Ghost : MonoBehaviour
 
 
         //print(xAxis + "   " + yAxis);
-        dirvec = GetDirectionVector(dir);
-        Vector3 pos = transform.position;
-        pos += dirvec * 2 * Time.deltaTime;
-        transform.position = pos;
+        
     }
 
     Vector3 GetDirectionVector(direction D)
@@ -143,5 +162,57 @@ public class Ghost : MonoBehaviour
     {
         int index = Random.Range(0, directions.Count);
         return directions[index];
+    }
+
+    // Take the list of valid directions and determine which direction is closest to the goal.
+    direction GetClosestDirection()
+    {
+        List<float> distances = new List<float>();
+        for(int i=0; i<validDirections.Count; i++)
+        {
+            Vector3 diffVec = node.position + GetDirectionVector(validDirections[i]) - goal;
+            distances.Add(diffVec.sqrMagnitude);
+        }
+        float minVal = distances.Min();
+        int index = distances.IndexOf(minVal);
+        return validDirections[index];
+            
+    }
+
+    void SetupModeStack()
+    {       
+        modes.Push(new Mode(name = "CHASE"));
+        modes.Push(new Mode(name = "SCATTER", timeVar: 5));
+        modes.Push(new Mode(name = "CHASE", timeVar: 20));
+        modes.Push(new Mode(name = "SCATTER", timeVar: 7));
+        modes.Push(new Mode(name = "CHASE", timeVar: 20));
+        modes.Push(new Mode(name = "SCATTER", timeVar: 7));
+        modes.Push(new Mode(name = "CHASE", timeVar: 20));
+        modes.Push(new Mode(name = "SCATTER", timeVar: 7));
+    }
+
+    // Change modes when it is time to do so
+    void ModeUpdate(float dt)
+    {
+        modeTimer += dt;
+        if(mode.time != 0)
+        {
+            if(modeTimer >= mode.time)
+            {
+                mode = modes.Pop();
+                modeTimer = 0;
+                print(mode.name);
+            }
+        }
+    }
+
+    void SetScatterGoal()
+    {
+        goal = new Vector3();
+    }
+
+    public void SetChaseGoal()
+    {
+        goal = AccelerometerTilt.S.transform.position;
     }
 }
