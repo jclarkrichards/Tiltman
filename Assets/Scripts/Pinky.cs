@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class Ghost : MonoBehaviour
-{
+public class Pinky : MonoBehaviour {
+
     direction dir = direction.NONE;
     Vector3 dirvec = new Vector3();
     Node node;
@@ -18,7 +18,7 @@ public class Ghost : MonoBehaviour
     float modeTimer = 0;
 
     // Use this for initialization
-    void Start ()
+    void Start()
     {
         SetupModeStack();
         mode = modes.Pop();
@@ -27,9 +27,9 @@ public class Ghost : MonoBehaviour
         transform.position = node.position;
         dir = direction.UP;
     }
-	
-	// Update is called once per frame
-	void Update ()
+
+    // Update is called once per frame
+    void Update()
     {
         dirvec = GetDirectionVector(dir);
         Vector3 pos = transform.position;
@@ -53,8 +53,8 @@ public class Ghost : MonoBehaviour
             //{
             //    dir = tiltDirection;
             //    target = node.neighbors[tiltDirection];
-                //print("new target acquired");
-                //print(target.position);
+            //print("new target acquired");
+            //print(target.position);
             //}
         }
         else // We are moving from a node to another node
@@ -90,24 +90,24 @@ public class Ghost : MonoBehaviour
             // The direction we are tilting takes precedence
             //if (node.neighbors.ContainsKey(tiltDirection))
             //{
-                //print("Tilt direction!");
-                //transform.position = node.position;
-                //dir = tiltDirection;
-                //target = node.neighbors[tiltDirection];
+            //print("Tilt direction!");
+            //transform.position = node.position;
+            //dir = tiltDirection;
+            //target = node.neighbors[tiltDirection];
             //}
             //else // Tilting direction is no good, can we keep moving in current direction?
             //{
-                if (node.neighbors.ContainsKey(dir))
-                {
-                    //print("Keep going!");
-                    target = node.neighbors[dir];
-                }
-                else
-                {
-                    //print("STOP!");
-                    transform.position = node.position;
-                    dir = direction.NONE;
-                }
+            if (node.neighbors.ContainsKey(dir))
+            {
+                //print("Keep going!");
+                target = node.neighbors[dir];
+            }
+            else
+            {
+                //print("STOP!");
+                transform.position = node.position;
+                dir = direction.NONE;
+            }
             //}
             //transform.position = node.position;
             //dir = direction.NONE;
@@ -117,7 +117,7 @@ public class Ghost : MonoBehaviour
 
 
         //print(xAxis + "   " + yAxis);
-        
+
     }
 
     Vector3 GetDirectionVector(direction D)
@@ -144,15 +144,15 @@ public class Ghost : MonoBehaviour
     {
         validDirections.Clear();
         Dictionary<direction, Node>.KeyCollection keys = node.neighbors.Keys;
-        foreach(direction key in keys)
+        foreach (direction key in keys)
         {
-            if(GetDirectionVector(key) != dirvec * -1)
+            if (GetDirectionVector(key) != dirvec * -1)
             {
                 validDirections.Add(key);
             }
-            
+
         }
-       
+
     }
 
     // Choose a random direction for a List of directions
@@ -166,7 +166,7 @@ public class Ghost : MonoBehaviour
     direction GetClosestDirection()
     {
         List<float> distances = new List<float>();
-        for(int i=0; i<validDirections.Count; i++)
+        for (int i = 0; i < validDirections.Count; i++)
         {
             Vector3 diffVec = node.position + GetDirectionVector(validDirections[i]) - goal;
             distances.Add(diffVec.sqrMagnitude);
@@ -174,11 +174,11 @@ public class Ghost : MonoBehaviour
         float minVal = distances.Min();
         int index = distances.IndexOf(minVal);
         return validDirections[index];
-            
+
     }
 
     void SetupModeStack()
-    {       
+    {
         modes.Push(new Mode(name = "CHASE"));
         modes.Push(new Mode(name = "SCATTER", timeVar: 5));
         modes.Push(new Mode(name = "CHASE", timeVar: 20));
@@ -193,9 +193,9 @@ public class Ghost : MonoBehaviour
     void ModeUpdate(float dt)
     {
         modeTimer += dt;
-        if(mode.time != 0)
+        if (mode.time != 0)
         {
-            if(modeTimer >= mode.time)
+            if (modeTimer >= mode.time)
             {
                 mode = modes.Pop();
                 modeTimer = 0;
@@ -206,7 +206,7 @@ public class Ghost : MonoBehaviour
 
     void SetScatterGoal()
     {
-        goal = new Vector3(448,0,0);
+        goal = new Vector3();
     }
 
     public void SetChaseGoal()
