@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2017
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiltMan", "TiltMan.csproj", "{D680117D-D36B-7A47-F52D-38C0D82E90ED}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D680117D-D36B-7A47-F52D-38C0D82E90ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D680117D-D36B-7A47-F52D-38C0D82E90ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D680117D-D36B-7A47-F52D-38C0D82E90ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D680117D-D36B-7A47-F52D-38C0D82E90ED}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
