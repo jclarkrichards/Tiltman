@@ -2,15 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/*
-public enum direction
-{
-    RIGHT,
-    LEFT,
-    UP,
-    DOWN, 
-    NONE
-}*/
 
 // This is basically the Pacman class
 public class AccelerometerTilt : MonoBehaviour
@@ -26,6 +17,7 @@ public class AccelerometerTilt : MonoBehaviour
     direction tiltDirection = direction.NONE;
     bool overshot_target = true;
     float speed = 5;
+    float score = 0;
 
     private void Awake()
     {
@@ -40,7 +32,7 @@ public class AccelerometerTilt : MonoBehaviour
         node = NodeGroup.S.nodelist[0];
         target = NodeGroup.S.nodelist[0];
         transform.position = node.position;
-     
+        
 	}
 	
 	// Update is called once per frame
@@ -48,10 +40,16 @@ public class AccelerometerTilt : MonoBehaviour
 	void Update ()
     {
         
+        //dirvec = GetDirectionVector(dir);
+        //Vector3 pos = transform.position;
+        //pos += dirvec * speed * Time.deltaTime;
+        //transform.position = pos;
+
+        EatPellets();
+
         tiltDirection = GetTiltDirection();  // Direction the player is indicating
-        
         // If we are stopped on a Node
-        if(dir == direction.NONE)
+        if (dir == direction.NONE)
         {
             if (node.neighbors.ContainsKey(tiltDirection))
             {
@@ -114,16 +112,16 @@ public class AccelerometerTilt : MonoBehaviour
             //dir = direction.NONE;
             
         }
-
-
-        
-        //print(xAxis + "   " + yAxis);
         dirvec = GetDirectionVector(dir);
         Vector3 pos = transform.position;
         pos += dirvec * speed * Time.deltaTime;
         transform.position = pos;
-		
-	}
+
+
+    
+
+
+    }
 
     Vector3 GetDirectionVector(direction D)
     {
@@ -184,36 +182,32 @@ public class AccelerometerTilt : MonoBehaviour
         */
     }
 
-    void LinkNodes()
-    {
-        /*
-        for(int i=0; i<nodesObjects.Length; i++)
+
+    // Deal with eating pellets.  If a power pellet was eaten, then put ghosts in FREIGHT mode
+    void EatPellets()
+    {      
+        for(int p=0; p<PelletGroup.S.pelletList.Count; p++)
         {
-            nodes[i] = new Node(nodesObjects[i].transform.position);
+            GameObject pellet = PelletGroup.S.pelletList[p];
+            Vector3 d = transform.position - pellet.transform.position;
+            float radius = pellet.GetComponent<SphereCollider>().radius;
+            float dSquared = d.sqrMagnitude;
+            float rSquared = Mathf.Pow((radius + radius), 2);
+            if(dSquared <= rSquared)
+            {
+                score += pellet.GetComponent<Pellet>().points;
+                if(pellet.GetComponent<Pellet>().points == 50)
+                {
+                    //Power pellet so put ghost in FREIGHT mode
+                    Blinky.S.modeScript.SetFreightMode();
+                }
+                //print(score);
+                bool test = PelletGroup.S.pelletList.Remove(pellet);
+                //print(test);
+                //print(PelletGroup.S.pelletList.Count);               
+                Destroy(pellet);                                
+                break;
+            }
         }
-        
-        nodes[0].AddNeighbor(nodes[1], direction.RIGHT);
-        nodes[0].AddNeighbor(nodes[2], direction.DOWN);
-
-        nodes[1].AddNeighbor(nodes[0], direction.LEFT);
-        nodes[1].AddNeighbor(nodes[3], direction.DOWN);
-
-        nodes[2].AddNeighbor(nodes[0], direction.UP);
-        nodes[2].AddNeighbor(nodes[3], direction.RIGHT);
-        nodes[2].AddNeighbor(nodes[5], direction.DOWN);
-
-        nodes[3].AddNeighbor(nodes[1], direction.UP);
-        nodes[3].AddNeighbor(nodes[2], direction.LEFT);
-        nodes[3].AddNeighbor(nodes[4], direction.RIGHT);
-
-        nodes[4].AddNeighbor(nodes[3], direction.LEFT);
-        nodes[4].AddNeighbor(nodes[6], direction.DOWN);
-
-        nodes[5].AddNeighbor(nodes[2], direction.UP);
-        nodes[5].AddNeighbor(nodes[6], direction.RIGHT);
-
-        nodes[6].AddNeighbor(nodes[4], direction.UP);
-        nodes[6].AddNeighbor(nodes[5], direction.LEFT);
-        */
     }
 }

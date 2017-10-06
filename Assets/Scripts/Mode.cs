@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class Mode
 {
-    public string name;
+    public ModeNames name;
     public float time;
     public float speedMult;
 
-    public Mode(string nameVar, float timeVar=0, float speedMultVar=1)
+    public Mode(ModeNames nameVar, float timeVar=0, float speedMultVar=1)
     {
         name = nameVar;
         time = timeVar;
