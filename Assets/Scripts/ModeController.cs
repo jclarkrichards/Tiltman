@@ -6,7 +6,8 @@ public enum ModeNames
 {
     SCATTER,
     CHASE,
-    FREIGHT
+    FREIGHT, 
+    SPAWN
 }
 
 public class ModeController : MonoBehaviour
@@ -52,8 +53,9 @@ public class ModeController : MonoBehaviour
 
     public void SetFreightMode()
     {
-        if(mode.name != ModeNames.FREIGHT)
+        if(mode.name != ModeNames.FREIGHT && mode.name != ModeNames.SPAWN)
         {
+            print("Not in Freight or spawn mode");
             if(mode.time != 0)
             {
                 float dt = mode.time - modeTimer;
@@ -68,8 +70,27 @@ public class ModeController : MonoBehaviour
         }
         else
         {
+            print("In freight or spawn mode");
             mode = new Mode(nameVar: ModeNames.FREIGHT, timeVar: 7, speedMultVar: 0.5f);
             modeTimer = 0;
         }
+    }
+
+    public void SetRespawnMode()
+    {
+        mode = new Mode(nameVar: ModeNames.SPAWN, speedMultVar: 2);
+        modeTimer = 0;
+    }
+
+    public void GetNextMode()
+    {
+        mode = modes.Pop();
+    }
+
+    // If ghosts have to restart, add a scatter mode
+    public void AddStartMode()
+    {
+        mode = new Mode(nameVar: ModeNames.SCATTER, timeVar: 5);
+        modeTimer = 0;
     }
 }

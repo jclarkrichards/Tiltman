@@ -19,6 +19,10 @@ public class NodeGroup : MonoBehaviour
     //public int rows;
     //public int cols;
     Node homeNode;
+    public Node tiltmanStart;
+    public Node blinkyStart;
+    public Node pinkyStart;
+    public Node fruitStart;
     
 
     private void Awake ()
@@ -94,7 +98,7 @@ public class NodeGroup : MonoBehaviour
         {
             for(int col=0; col<cols; col++)
             {
-                if(nodearray[row, col] == '+' || nodearray[row, col] == 'n' || nodearray[row, col] == 'N')
+                if(nodearray[row, col] == '+' || nodearray[row, col] == 'n' || nodearray[row, col] == 'N' || nodearray[row, col] == 'S' || nodearray[row, col] == 'T' || nodearray[row, col] == '1' || nodearray[row, col] == '2' || nodearray[row, col] == 'F')
                 {
                     return CreateNode(row, col, offset);
                 }
@@ -147,7 +151,7 @@ public class NodeGroup : MonoBehaviour
     }
 
     // Look for Node n in the nodelist.  If it is there, return that node.  If not then return Node n
-    Node GetNodeFromNode(Node n, List<Node> nlist)
+    public Node GetNodeFromNode(Node n, List<Node> nlist)
     {
         if(n != null)
         {
@@ -162,6 +166,7 @@ public class NodeGroup : MonoBehaviour
         }
         return n;
     }
+
 
     Node FollowPath(direction d, Node n, char[,] nodearray)
     {
@@ -188,14 +193,46 @@ public class NodeGroup : MonoBehaviour
     // Follow a path UP, DOWN, LEFT, or RIGHT along '-' and '|' symbols until you reach a '+' symbol
     Node PathToFollow(direction d, int row, int col, char symbol, char[,] nodearray)
     {
-        if(nodearray[row, col] == symbol || nodearray[row, col] == '+' || nodearray[row, col] == 'a' || nodearray[row, col] == 'p' || nodearray[row, col] == 'P' || nodearray[row, col] == 'H')
+        if(nodearray[row, col] == symbol || nodearray[row, col] == '+' || nodearray[row, col] == 'a' || nodearray[row, col] == 'p' || nodearray[row, col] == 'P' || nodearray[row, col] == 'H' || nodearray[row, col] == 'S' || nodearray[row, col] == 'T' || nodearray[row, col] == '1' || nodearray[row, col] == '2' || nodearray[row, col] == 'F')
         {
-            while(nodearray[row, col] != '+' && nodearray[row, col] != 'a' && nodearray[row, col] != 'n' && nodearray[row, col] != 'N' && nodearray[row, col] != 'H')
+            while(nodearray[row, col] != '+' && nodearray[row, col] != 'a' && nodearray[row, col] != 'n' && nodearray[row, col] != 'N' && nodearray[row, col] != 'H' && nodearray[row, col] != 'S' && nodearray[row, col] != 'T' && nodearray[row, col] != '1' && nodearray[row, col] != '2' && nodearray[row, col] != 'F')
             {
                 if(d == direction.LEFT) { col -= 1; }
                 else if(d == direction.RIGHT) { col += 1; }
                 else if(d == direction.UP) { row -= 1; }
                 else if(d == direction.DOWN) { row += 1; }              
+            }
+            if(nodearray[row, col] == 'F')
+            {
+                fruitStart = CreateNode(row, col, offset);
+                return fruitStart;
+            }
+            if(nodearray[row, col] == '1')
+            {
+                blinkyStart = CreateNode(row, col, offset);
+                blinkyStart.homegate = true;
+                //print("BLINKY START: " + blinkyStart.position);
+                return blinkyStart;
+            }
+            if (nodearray[row, col] == '2')
+            {
+                pinkyStart = CreateNode(row, col, offset);
+                //print("BLINKY START: " + blinkyStart.position);
+                return pinkyStart;
+            }
+            if (nodearray[row, col] == 'T')
+            {
+                tiltmanStart = CreateNode(row, col, offset);        
+                return tiltmanStart;
+
+            }
+            if(nodearray[row, col] == 'S')
+            {
+                //print("Spawn point");
+                Node temp = CreateNode(row, col, offset);
+                temp.spawnPoint = true;
+                return temp;
+             
             }
             if(nodearray[row, col] == 'H')
             {
@@ -276,18 +313,45 @@ public class NodeGroup : MonoBehaviour
     
     void MoveHomeNodes()
     {
-        print(homeNode.row + ", " + homeNode.col);
+        //print(homeNode.row + ", " + homeNode.col);
         Node nodeA = GetNodeFromNode(homeNode, nodelist);
         Node nodeB = nodeA.neighbors[direction.LEFT];
         Vector3 mid = (nodeA.position + nodeB.position) / 2.0f;
-        print(nodeA.position);
-        print(nodeB.position);
-        print(mid);
+        //print(nodeA.position);
+        //print(nodeB.position);
+        //print(mid);
         Vector3 vec = new Vector3(homelist[0].position.x, homelist[0].position.y, 0);
         for(int i=0; i<homelist.Count; i++)
         {
-            homelist[i].position -= vec;
-            homelist[i].position += mid;
+            if (homelist[i].position == blinkyStart.position)
+            {
+                //print("BLINKY START MOVING FROM: " + homelist[i].position);
+                homelist[i].position -= vec;
+                homelist[i].position += mid;
+                //print("To: " + homelist[i].position);
+                blinkyStart = homelist[i];
+                blinkyStart.homegate = true;
+            }
+            else if (homelist[i].position == pinkyStart.position)
+            {
+                //print("BLINKY START MOVING FROM: " + homelist[i].position);
+                homelist[i].position -= vec;
+                homelist[i].position += mid;
+                //print("To: " + homelist[i].position);
+                pinkyStart = homelist[i];
+            }
+            else
+            {
+                homelist[i].position -= vec;
+                homelist[i].position += mid;
+            }
+            
+            
+            //print(homelist[i].spawnPoint);
+            if(homelist[i].spawnPoint)
+            {
+                //print("SPAWN POINT:  " + homelist[i].position);
+            }
         }
         nodeA.neighbors[direction.LEFT] = homelist[0];
         nodeB.neighbors[direction.RIGHT] = homelist[0];
@@ -295,5 +359,23 @@ public class NodeGroup : MonoBehaviour
         homelist[0].neighbors[direction.LEFT] = nodeB;
     }
 
+    public Node GetTiltmanStart()
+    {
+        return GetNodeFromNode(tiltmanStart, nodelist);
+    }
 
+    public Node GetBlinkyStart()
+    {
+        return GetNodeFromNode(blinkyStart, homelist);
+    }
+
+    public Node GetPinkyStart()
+    {
+        return GetNodeFromNode(pinkyStart, homelist);
+    }
+
+    public Node GetFruitStart()
+    {
+        return GetNodeFromNode(fruitStart, nodelist);
+    }
 }

@@ -19,7 +19,7 @@ public class DirectionController : MonoBehaviour
     List<direction> validDirections = new List<direction>();
 
     // Use this for initialization
-    void Start ()
+    void Awake ()
     {
         current_direction = direction.UP;
     }
@@ -44,21 +44,28 @@ public class DirectionController : MonoBehaviour
     }
 
     // Build a List of valid directions to choose from
-    public void GetValidDirections(Node node)
+    public void GetValidDirections(Node node, ModeController mode)
     {
         validDirections.Clear();
         Dictionary<direction, Node>.KeyCollection keys = node.neighbors.Keys;
         foreach (direction key in keys)
         {
-            if (GetDirectionVector(key) != dirvec * -1)
+            if(!(node.homegate && key == direction.DOWN && mode.mode.name != ModeNames.SPAWN))
             {
-                validDirections.Add(key);
+                if (GetDirectionVector(key) != dirvec * -1)
+                {
+                    validDirections.Add(key);
+                }
             }
 
+            
+
+
         }
+
         if(validDirections.Count == 0)
         {
-            print("ping pong");
+            //print("ping pong");
             foreach (direction key in keys)
             {
                 if (GetDirectionVector(key) == dirvec * -1)

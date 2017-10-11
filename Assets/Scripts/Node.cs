@@ -11,7 +11,8 @@ public class Node
     public int col;
     public bool portal = false;
     public Node portalNode = null;
-
+    public bool spawnPoint = false;
+    public bool homegate = false;
    
 
     public Node(float px, float py, int r, int c, Vector3 offset=new Vector3(), bool p=false)

@@ -12,6 +12,7 @@ public class Blinky : MonoBehaviour
     bool overshot_target = true;   
     float speed = 5;
     DirectionController directionScript;
+    [HideInInspector]
     public ModeController modeScript;
 
     private void Awake()
@@ -24,57 +25,90 @@ public class Blinky : MonoBehaviour
     {
         directionScript = GetComponent<DirectionController>();
         modeScript = GetComponent<ModeController>();
-        node = NodeGroup.S.nodelist[6];
-        target = NodeGroup.S.nodelist[6];
+        //node = NodeGroup.S.nodelist[6];
+        //target = NodeGroup.S.nodelist[6];
+        node = NodeGroup.S.GetBlinkyStart();
+        target = NodeGroup.S.GetBlinkyStart();
         transform.position = node.position;
+        //print("NEW BLINKY START: " + transform.position);
+        directionScript.current_direction = direction.LEFT;
+        directionScript.SetDirectionVector(direction.LEFT);
+        //print("Start direction: " + directionScript.dirvec);
+    }
+
+    public void SetStartingConditions()
+    {
+        node = NodeGroup.S.GetBlinkyStart();
+        target = NodeGroup.S.GetBlinkyStart();
+        transform.position = node.position;      
+        directionScript.current_direction = direction.LEFT;
+        directionScript.SetDirectionVector(direction.LEFT);
+        modeScript.AddStartMode();
     }
 
     // Update is called once per frame
     void Update()
     {
-        float dt = Time.deltaTime;
-        directionScript.SetDirectionVector(directionScript.current_direction);
-        Vector3 pos = transform.position;
-        pos += directionScript.dirvec * speed * modeScript.mode.speedMult * dt;
-        transform.position = pos;
+        if(!Pauser.S.paused)
+        {
+            float dt = Time.deltaTime;
+            directionScript.SetDirectionVector(directionScript.current_direction);
+            Vector3 pos = transform.position;
+            float speedMod = ModifySpeed();
+            pos += directionScript.dirvec * speedMod * dt;
+            transform.position = pos;
 
-        modeScript.ModeUpdate(dt);
-        if (modeScript.mode.name == ModeNames.CHASE)
-        {
-            SetChaseGoal();
-        }
-        else if (modeScript.mode.name == ModeNames.SCATTER)
-        {
-            SetScatterGoal();
-        }
-        else if(modeScript.mode.name == ModeNames.FREIGHT)
-        {
-            SetRandomGoal();
+            modeScript.ModeUpdate(dt);
+            if (modeScript.mode.name == ModeNames.CHASE)
+            {
+                SetChaseGoal();
+            }
+            else if (modeScript.mode.name == ModeNames.SCATTER)
+            {
+                SetScatterGoal();
+            }
+            else if (modeScript.mode.name == ModeNames.FREIGHT)
+            {
+                SetRandomGoal();
+            }
+            else if (modeScript.mode.name == ModeNames.SPAWN)
+            {
+                SetSpawnGoal();
+            }
+
+
+            if (OvershotTarget())
+            {
+                node = target;
+                if (node.portal)
+                {
+                    node = node.portalNode;
+                    transform.position = node.position;
+                }
+                directionScript.GetValidDirections(node, modeScript);
+                directionScript.GetClosestDirection(node, goal);
+                transform.position = node.position;
+
+                if (node.neighbors.ContainsKey(directionScript.current_direction))
+                {
+                    target = node.neighbors[directionScript.current_direction];
+                }
+                else
+                {
+                    transform.position = node.position;
+                    directionScript.current_direction = direction.NONE;
+                }
+                if (modeScript.mode.name == ModeNames.SPAWN)
+                {
+                    if (transform.position == goal)
+                    {
+                        //print("Made it home");
+                        modeScript.GetNextMode();
+                    }
+                }
+            }
         }
         
-
-        if (OvershotTarget())
-        {
-            node = target;
-            if (node.portal)
-            {             
-                node = node.portalNode;
-                transform.position = node.position;
-            }
-            directionScript.GetValidDirections(node);
-            directionScript.GetClosestDirection(node, goal);       
-            transform.position = node.position;
-            
-            if (node.neighbors.ContainsKey(directionScript.current_direction))
-            {         
-                target = node.neighbors[directionScript.current_direction];
-            }
-            else
-            {
-                transform.position = node.position;
-                directionScript.current_direction = direction.NONE;
-            }       
-        }
     }
     
     bool OvershotTarget()
@@ -100,5 +134,19 @@ public class Blinky : MonoBehaviour
     public void SetRandomGoal()
     {
         goal = directionScript.RandomDirectionFromValidList();
+    }
+
+    public void SetSpawnGoal()
+    {
+        goal = new Vector3(13.5f, -14, 0);
+    }
+
+    float ModifySpeed()
+    {
+        if(node.portal || target.portal)
+        {
+            return speed / 2.0f;
+        }
+        return speed * modeScript.mode.speedMult;
     }
 }

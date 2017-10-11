@@ -40,7 +40,7 @@ public class PelletGroup : MonoBehaviour
         {
             for(int col=0; col<cols; col++)
             {
-                if(levelArray[row, col] == 'p' || levelArray[row, col] == 'n')
+                if(levelArray[row, col] == 'p' || levelArray[row, col] == 'n' || levelArray[row, col] == 'T')
                 {
                     GameObject pellet = Instantiate(pelletPrefab) as GameObject;
                     Vector3 temp = Camera.main.WorldToScreenPoint(new Vector3(col, row, 0));

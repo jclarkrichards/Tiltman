@@ -4,133 +4,152 @@ using UnityEngine;
 using System.Linq;
 
 public class Pinky : MonoBehaviour {
-    
-    direction dir = direction.NONE;
-    Vector3 dirvec = new Vector3();
+
+    public static Pinky S;
     Node node;
     Node target;
-    Vector3 goal = new Vector3();
+    public Vector3 goal = new Vector3();
     bool overshot_target = true;
-    List<direction> validDirections = new List<direction>();
     float speed = 5;
-   
+    DirectionController directionScript;
+    [HideInInspector]
+    public ModeController modeScript;
+
+    private void Awake()
+    {
+        S = this;
+    }
 
     // Use this for initialization
     void Start()
     {
-        node = NodeGroup.S.nodelist[6];
-        target = NodeGroup.S.nodelist[6];
+        directionScript = GetComponent<DirectionController>();
+        modeScript = GetComponent<ModeController>();
+        //node = NodeGroup.S.nodelist[6];
+        //target = NodeGroup.S.nodelist[6];
+        node = NodeGroup.S.GetPinkyStart();
+        target = NodeGroup.S.GetPinkyStart().neighbors[direction.RIGHT];
         transform.position = node.position;
-        dir = direction.UP;
+        directionScript.current_direction = direction.RIGHT;
+        directionScript.SetDirectionVector(direction.RIGHT);
     }
 
+    public void SetStartingConditions()
+    {
+        node = NodeGroup.S.GetPinkyStart();
+        target = NodeGroup.S.GetPinkyStart().neighbors[direction.RIGHT];
+        transform.position = node.position;
+        directionScript.current_direction = direction.RIGHT;
+        directionScript.SetDirectionVector(direction.RIGHT);
+        modeScript.AddStartMode();
+
+    }
     // Update is called once per frame
     void Update()
     {
-        dirvec = GetDirectionVector(dir);  //Current direction vector
-        Vector3 pos = transform.position;
-        pos += dirvec * speed * Time.deltaTime;  //Update position using current direction vector
-        transform.position = pos;
-        GetComponent<ModeController>().ModeUpdate(Time.deltaTime);
-        if (GetComponent<ModeController>().mode.name == ModeNames.CHASE)
+        
+        if(!Pauser.S.paused)
         {
-            SetChaseGoal();
-        }
-        else if (GetComponent<ModeController>().mode.name == ModeNames.SCATTER)
-        {
-            SetScatterGoal();
-        }       
-      
-        if (OvershotTarget())
-        {
-            node = target;
-            if (node.portal)
+            print(modeScript.mode.name);
+            //print(directionScript.current_direction);
+            //print(directionScript.dirvec);
+            //print(" ");
+            float dt = Time.deltaTime;
+            directionScript.SetDirectionVector(directionScript.current_direction);
+            Vector3 pos = transform.position;
+            float speedMod = ModifySpeed();
+            pos += directionScript.dirvec * speedMod * dt;
+            transform.position = pos;
+
+            modeScript.ModeUpdate(dt);
+            if (modeScript.mode.name == ModeNames.CHASE)
             {
-                node = node.portalNode;
+                SetChaseGoal();
+            }
+            else if (modeScript.mode.name == ModeNames.SCATTER)
+            {
+                SetScatterGoal();
+            }
+            else if (modeScript.mode.name == ModeNames.FREIGHT)
+            {
+                SetRandomGoal();
+            }
+            else if (modeScript.mode.name == ModeNames.SPAWN)
+            {
+                SetSpawnGoal();
+            }
+
+
+            if (OvershotTarget())
+            {
+                node = target;
+                if (node.portal)
+                {
+                    node = node.portalNode;
+                    transform.position = node.position;
+                }
+                directionScript.GetValidDirections(node, modeScript);
+                directionScript.GetClosestDirection(node, goal);
                 transform.position = node.position;
-            }
-            GetValidDirections();
-            dir = GetClosestDirection();          
-            transform.position = node.position;
-           
-            if (node.neighbors.ContainsKey(dir))
-            {
-                target = node.neighbors[dir];
-            }
-            else
-            {
-                transform.position = node.position;
-                dir = direction.NONE;
+
+                if (node.neighbors.ContainsKey(directionScript.current_direction))
+                {
+                    target = node.neighbors[directionScript.current_direction];
+                }
+                else
+                {
+                    transform.position = node.position;
+                    directionScript.current_direction = direction.NONE;
+                }
+                if (modeScript.mode.name == ModeNames.SPAWN)
+                {
+                    if (transform.position == goal)
+                    {
+                        //print("Made it home");
+                        modeScript.GetNextMode();
+                    }
+                }
             }
         }
+        
     }
-    
-    Vector3 GetDirectionVector(direction D)
-    {
-        if (D == direction.DOWN) { return new Vector3(0, -1, 0); }
-        else if (D == direction.UP) { return new Vector3(0, 1, 0); }
-        else if (D == direction.LEFT) { return new Vector3(-1, 0, 0); }
-        else if (D == direction.RIGHT) { return new Vector3(1, 0, 0); }
-        else { return new Vector3(); }
-    }
-    
+
     bool OvershotTarget()
     {
         Vector3 vec1 = target.position - node.position;
         Vector3 vec2 = transform.position - node.position;
         float node2Target = vec1.sqrMagnitude;
         float node2Self = vec2.sqrMagnitude;
-        //print(target.position + "  " + node.position+ "  " + node2Target + "  " + node2Self);
         return node2Self > node2Target;
     }
 
-    // Build a List of valid directions to choose from
-    void GetValidDirections()
-    {
-        validDirections.Clear();
-        Dictionary<direction, Node>.KeyCollection keys = node.neighbors.Keys;
-        foreach (direction key in keys)
-        {
-            if (GetDirectionVector(key) != dirvec * -1)
-            {
-                validDirections.Add(key);
-            }
 
-        }
-
-    }
-
-    // Choose a random direction for a List of directions
-    direction RandomDirection(List<direction> directions)
-    {
-        int index = Random.Range(0, directions.Count);
-        return directions[index];
-    }
-
-    // Take the list of valid directions and determine which direction is closest to the goal.
-    direction GetClosestDirection()
-    {
-        List<float> distances = new List<float>();
-        for (int i = 0; i < validDirections.Count; i++)
-        {
-            Vector3 diffVec = node.position + GetDirectionVector(validDirections[i]) - goal;
-            distances.Add(diffVec.sqrMagnitude);
-        }
-        float minVal = distances.Min();
-        int index = distances.IndexOf(minVal);
-        return validDirections[index];
-
-    }
-
-  
-    
-    void SetScatterGoal()
+    public void SetScatterGoal()
     {
         goal = new Vector3();
     }
 
-    void SetChaseGoal()
+    public void SetChaseGoal()
     {
         goal = AccelerometerTilt.S.transform.position;
+    }
+
+    public void SetRandomGoal()
+    {
+        goal = directionScript.RandomDirectionFromValidList();
+    }
+
+    public void SetSpawnGoal()
+    {
+        goal = new Vector3(13.5f, -14, 0);
+    }
+
+    float ModifySpeed()
+    {
+        if (node.portal || target.portal)
+        {
+            return speed / 2.0f;
+        }
+        return speed * modeScript.mode.speedMult;
     }
 }
