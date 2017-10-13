@@ -22,7 +22,10 @@ public class NodeGroup : MonoBehaviour
     public Node tiltmanStart;
     public Node blinkyStart;
     public Node pinkyStart;
+    public Node inkyStart;
+    public Node clydeStart;
     public Node fruitStart;
+    public Node spawn;
     
 
     private void Awake ()
@@ -37,14 +40,12 @@ public class NodeGroup : MonoBehaviour
         CreateLinkedNodelist(nodelist, levelArray);
         CreateLinkedNodelist(homelist, homeArray);
         MoveHomeNodes();
+        
         DrawMazeBackground(levelArray);
         ShowNodes(nodelist);
         ShowNodes(homelist);
-      
-        float newSize = 28 / (2f * Camera.main.aspect);
-        Camera.main.orthographicSize = newSize;
-        Camera.main.transform.position = new Vector3(13.5f, -newSize/1.25f, -10);
-    
+        //Node test = GetNodeByRowCol(nodelist, 11, 12);
+        //print("Test node: " + test);
         List<int> portalList = new List<int>();
         for(int i=0; i<nodelist.Count; i++)
         {
@@ -60,9 +61,12 @@ public class NodeGroup : MonoBehaviour
             nodelist[portalList[1]].AddPortalNeighbor(nodelist[portalList[0]]);
         }
     }
-	
 
 
+    private void Start()
+    {
+        SetupNodeRestrictions(nodelist);
+    }
     // Create a List of Nodes where all of the Nodes are linked together based on these rules
     void CreateLinkedNodelist(List<Node> nlist, char[,] nodearray)
     {
@@ -86,7 +90,8 @@ public class NodeGroup : MonoBehaviour
             AddNodeToStack(rightNode, nlist);
             AddNodeToStack(upNode, nlist);
             AddNodeToStack(downNode, nlist);          
-        }       
+        } 
+        
     }
 
     // Looks in the levelArray and finds the first Node which is the first instance of '+'
@@ -98,7 +103,7 @@ public class NodeGroup : MonoBehaviour
         {
             for(int col=0; col<cols; col++)
             {
-                if(nodearray[row, col] == '+' || nodearray[row, col] == 'n' || nodearray[row, col] == 'N' || nodearray[row, col] == 'S' || nodearray[row, col] == 'T' || nodearray[row, col] == '1' || nodearray[row, col] == '2' || nodearray[row, col] == 'F')
+                if(nodearray[row, col] == '+' || nodearray[row, col] == 'n' || nodearray[row, col] == 'N' || nodearray[row, col] == 'S' || nodearray[row, col] == 'T' || nodearray[row, col] == '1' || nodearray[row, col] == '2' || nodearray[row, col] == '3' || nodearray[row, col] == 'F')
                 {
                     return CreateNode(row, col, offset);
                 }
@@ -167,6 +172,19 @@ public class NodeGroup : MonoBehaviour
         return n;
     }
 
+    public Node GetNodeByRowCol(List<Node> nlist, int row, int col)
+    {     
+        for (int i = 0; i < nlist.Count; i++)
+        {
+            //print(nlist[i].row + ", " + nlist[i].col);
+            if(nlist[i].row == row && nlist[i].col == col)
+            {
+                return nlist[i];
+            }
+        }
+        
+        return null;
+    }
 
     Node FollowPath(direction d, Node n, char[,] nodearray)
     {
@@ -193,9 +211,9 @@ public class NodeGroup : MonoBehaviour
     // Follow a path UP, DOWN, LEFT, or RIGHT along '-' and '|' symbols until you reach a '+' symbol
     Node PathToFollow(direction d, int row, int col, char symbol, char[,] nodearray)
     {
-        if(nodearray[row, col] == symbol || nodearray[row, col] == '+' || nodearray[row, col] == 'a' || nodearray[row, col] == 'p' || nodearray[row, col] == 'P' || nodearray[row, col] == 'H' || nodearray[row, col] == 'S' || nodearray[row, col] == 'T' || nodearray[row, col] == '1' || nodearray[row, col] == '2' || nodearray[row, col] == 'F')
+        if(nodearray[row, col] == symbol || nodearray[row, col] == '+' || nodearray[row, col] == 'a' || nodearray[row, col] == 'p' || nodearray[row, col] == 'P' || nodearray[row, col] == 'H' || nodearray[row, col] == 'S' || nodearray[row, col] == 'T' || nodearray[row, col] == '1' || nodearray[row, col] == '2' || nodearray[row, col] == 'F' || nodearray[row, col] == '3')
         {
-            while(nodearray[row, col] != '+' && nodearray[row, col] != 'a' && nodearray[row, col] != 'n' && nodearray[row, col] != 'N' && nodearray[row, col] != 'H' && nodearray[row, col] != 'S' && nodearray[row, col] != 'T' && nodearray[row, col] != '1' && nodearray[row, col] != '2' && nodearray[row, col] != 'F')
+            while(nodearray[row, col] != '+' && nodearray[row, col] != 'a' && nodearray[row, col] != 'n' && nodearray[row, col] != 'N' && nodearray[row, col] != 'H' && nodearray[row, col] != 'S' && nodearray[row, col] != 'T' && nodearray[row, col] != '1' && nodearray[row, col] != '2' && nodearray[row, col] != 'F' && nodearray[row, col] != '3')
             {
                 if(d == direction.LEFT) { col -= 1; }
                 else if(d == direction.RIGHT) { col += 1; }
@@ -207,6 +225,7 @@ public class NodeGroup : MonoBehaviour
                 fruitStart = CreateNode(row, col, offset);
                 return fruitStart;
             }
+            
             if(nodearray[row, col] == '1')
             {
                 blinkyStart = CreateNode(row, col, offset);
@@ -214,25 +233,32 @@ public class NodeGroup : MonoBehaviour
                 //print("BLINKY START: " + blinkyStart.position);
                 return blinkyStart;
             }
+            
             if (nodearray[row, col] == '2')
             {
-                pinkyStart = CreateNode(row, col, offset);
+                inkyStart = CreateNode(row, col, offset);
                 //print("BLINKY START: " + blinkyStart.position);
-                return pinkyStart;
+                return inkyStart;
+            }
+            if (nodearray[row, col] == '3')
+            {
+                clydeStart = CreateNode(row, col, offset);
+                //print("BLINKY START: " + blinkyStart.position);
+                return clydeStart;
             }
             if (nodearray[row, col] == 'T')
             {
                 tiltmanStart = CreateNode(row, col, offset);        
                 return tiltmanStart;
-
             }
             if(nodearray[row, col] == 'S')
             {
-                //print("Spawn point");
-                Node temp = CreateNode(row, col, offset);
-                temp.spawnPoint = true;
-                return temp;
-             
+                pinkyStart = CreateNode(row, col, offset);
+                pinkyStart.spawnPoint = true;
+                //Node temp = CreateNode(row, col, offset);
+                //temp.spawnPoint = true;
+                // return temp; 
+                return pinkyStart;
             }
             if(nodearray[row, col] == 'H')
             {
@@ -339,6 +365,24 @@ public class NodeGroup : MonoBehaviour
                 homelist[i].position += mid;
                 //print("To: " + homelist[i].position);
                 pinkyStart = homelist[i];
+                spawn = homelist[i];
+                //print("SPAWN: " + spawn.position);
+            }
+            else if (homelist[i].position == inkyStart.position)
+            {
+                //print("BLINKY START MOVING FROM: " + homelist[i].position);
+                homelist[i].position -= vec;
+                homelist[i].position += mid;
+                //print("To: " + homelist[i].position);
+                inkyStart = homelist[i];
+            }
+            else if (homelist[i].position == clydeStart.position)
+            {
+                //print("BLINKY START MOVING FROM: " + homelist[i].position);
+                homelist[i].position -= vec;
+                homelist[i].position += mid;
+                //print("To: " + homelist[i].position);
+                clydeStart = homelist[i];
             }
             else
             {
@@ -374,8 +418,80 @@ public class NodeGroup : MonoBehaviour
         return GetNodeFromNode(pinkyStart, homelist);
     }
 
+    public Node GetInkyStart()
+    {
+        return GetNodeFromNode(inkyStart, homelist);
+    }
+
+    public Node GetClydeStart()
+    {
+        return GetNodeFromNode(clydeStart, homelist);
+    }
+
     public Node GetFruitStart()
     {
         return GetNodeFromNode(fruitStart, nodelist);
+    }
+
+    // Some nodes have movement restrictions for the ghosts and/or pacman.  
+    void SetupNodeRestrictions(List<Node> nlist)
+    {
+        //print("SET UP RESTRICTIONS");
+        //print(level.level1Restrictions[direction.UP]);
+        Dictionary<direction, int[,]>.KeyCollection keys = level.level1Restrictions.Keys;
+        foreach (direction key in keys) //UP, DOWN, LEFT, RIGHT
+        {
+            //print("KEY = " + key);
+            //print("Number of nodes = " + nlist.Count);
+            if(key == direction.UP)
+            {
+                int[,] restrict = level.level1Restrictions[key];
+                for (int j = 0; j < restrict.Length / 2; j++)
+                {
+                    int row = restrict[j, 0];
+                    int col = restrict[j, 1];
+                    //print(row + ", " + col);
+                    Node n = GetNodeByRowCol(nlist, row, col);
+                    if(n != null)
+                    {
+                        n.restrictUP = true;
+                    }
+                }
+            }
+
+            /*
+            for(int i=0; i<nlist.Count; i++) //Loop through all the nodes
+            {
+                //print(nlist[i].row + ", " + nlist[i].col);
+                if (key == direction.UP)  
+                {               
+                    int[,] restrict = level.level1Restrictions[key];
+                    for(int j=0; j<restrict.Length/2; j++) //Loop through all of the UP (row, col)'s
+                    {
+                        int row = restrict[j, 0];
+                        int col = restrict[j, 1];
+                        print(row + ", " + col);
+                        Node n = GetNodeByRowCol(nlist, row, col);
+                        if(n != null)
+                        {
+                            //print("ROW/COL = " + row + "/" + col + " at index = " + i);
+                            nlist[i].restrictUP = true;
+                        }
+                    }
+                }
+                print(" ");
+            }*/
+            
+        }
+        //print("How many nodes have the restriction?");
+        int numtest = 0;
+        for(int i=0; i<nlist.Count; i++)
+        {
+            if(nlist[i].restrictUP)
+            {
+                numtest++;
+            }
+        }
+        //print("This many = " + numtest);
     }
 }

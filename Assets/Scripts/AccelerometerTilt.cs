@@ -11,7 +11,7 @@ public class AccelerometerTilt : MonoBehaviour
     
     //Node[] nodes; // Contains all of the nodes
     public direction dir;
-    Vector3 dirvec;
+    public Vector3 dirvec;
     Node node;
     Node target;
     direction tiltDirection;
@@ -57,7 +57,7 @@ public class AccelerometerTilt : MonoBehaviour
         Vector3 halfway = (node.position - target.position) / 2;
         transform.position = node.position - halfway;
         //Pauser.S.paused = true;
-        print("STARTING POSITIONS");
+        //print("STARTING POSITIONS");
     }
 	
 	// Update is called once per frame
@@ -238,6 +238,9 @@ public class AccelerometerTilt : MonoBehaviour
                     ghostScore = 200;
                     Blinky.S.modeScript.SetFreightMode();
                     Pinky.S.modeScript.SetFreightMode();
+                    Inky.S.modeScript.SetFreightMode();
+                    Clyde.S.modeScript.SetFreightMode();
+                  
                 }
                 //print(score);
                 bool test = PelletGroup.S.pelletList.Remove(pellet);
@@ -269,7 +272,7 @@ public class AccelerometerTilt : MonoBehaviour
             {
                 if(Blinky.S.modeScript.mode.name != ModeNames.SPAWN)
                 {
-                    print("Death by Blinky");
+                    //print("Death by Blinky");
                     RestartLevel();
                 }
                 
@@ -289,10 +292,50 @@ public class AccelerometerTilt : MonoBehaviour
             {
                 if(Pinky.S.modeScript.mode.name != ModeNames.SPAWN)
                 {
-                    print("Death by Pinky");
+                    //print("Death by Pinky");
                     RestartLevel();
                 }
                 
+            }
+        }
+
+        if (EatGhost(Inky.S.gameObject))
+        {
+            if (Inky.S.modeScript.mode.name == ModeNames.FREIGHT)
+            {
+                Inky.S.modeScript.SetRespawnMode();
+                score += ghostScore;
+                ghostScore *= 2;
+                
+            }
+            else
+            {
+                if (Inky.S.modeScript.mode.name != ModeNames.SPAWN)
+                {
+                    //print("Death by Inky");
+                    RestartLevel();
+                }
+
+            }
+        }
+
+        if (EatGhost(Clyde.S.gameObject))
+        {
+            if (Clyde.S.modeScript.mode.name == ModeNames.FREIGHT)
+            {
+                Clyde.S.modeScript.SetRespawnMode();
+                score += ghostScore;
+                ghostScore *= 2;
+               
+            }
+            else
+            {
+                if (Clyde.S.modeScript.mode.name != ModeNames.SPAWN)
+                {
+                    //print("Death by Clyde");
+                    RestartLevel();
+                }
+
             }
         }
     }
@@ -330,6 +373,12 @@ public class AccelerometerTilt : MonoBehaviour
         SetStartingConditions();
         Blinky.S.SetStartingConditions();
         Pinky.S.SetStartingConditions();
+        Inky.S.SetStartingConditions();
+        Clyde.S.SetStartingConditions();
         Pauser.S.paused = true;
+        if(GameController.S.fruit != null)
+        {
+            Destroy(GameController.S.fruit.gameObject);
+        }
     }
 }

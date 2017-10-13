@@ -12,6 +12,9 @@ public class GameController : MonoBehaviour
     private void Awake()
     {
         S = this;
+        float newSize = 28 / (2f * Camera.main.aspect);
+        Camera.main.orthographicSize = newSize;
+        Camera.main.transform.position = new Vector3(13.5f, -newSize / 1.25f, -10);
     }
 
     // Use this for initialization
@@ -23,8 +26,9 @@ public class GameController : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        if (AccelerometerTilt.S.numPelletsEaten == 70)
+        if (AccelerometerTilt.S.numPelletsEaten == 10 && fruit == null)
         {
+            //print("Create the fruit");
             CreateFruit();
         }
     }

@@ -4,20 +4,8 @@ using UnityEngine;
 
 public class LevelLayout
 {
-    //public int rows = 8;
-    //public int cols = 5;
     public int rows;
     public int cols;
-    public char[,] levelArray2 = new char[,] {{'+', '-', '+', '-', '+'},
-                                              {'|', '0', '|', '0', '|'},
-                                              {'|', '0', '|', '0', '|'},
-                                              {'+', '-', '+', '-', '+'},
-                                              {'|', '0', '0', '0', '|'},
-                                              {'|', '0', '0', '0', '|'},
-                                              {'|', '0', '0', '0', '|'},
-                                              {'|', '0', '0', '0', '|'},
-                                              {'+', '-', '-', '-', '+'}};
-
 
     public char[,] levelArray = new char[,] {
 { 'w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w' },
@@ -56,15 +44,29 @@ public class LevelLayout
                                  { '0','0','0','1','0','0','0' },
                                  { '0','0','0','|','0','0','0' },
                                  { '0','+','0','|','0','+','0' },
-                                 { '0','2','-','S','-','+','0' },
+                                 { '0','2','-','S','-','3','0' },
                                  { '0','+','0','0','0','+','0' },
                                  { '0','0','0','0','0','0','0' }};
 
 
+    int[,] test;
+    public Dictionary<direction, int[,]> level1Restrictions = new Dictionary<direction, int[,]>();
+    
+
     public LevelLayout()
     {
+        //Debug.Log("Defining the restrictions");
         rows = levelArray.GetLength(0);
         cols = levelArray.GetLength(1);
+        test = new int[,] { { 11, 12 }, { 11, 15 }, { 23, 12 }, { 23, 15 } };
+        //Debug.Log(test);
+        level1Restrictions.Add(direction.UP, test);
+        //Debug.Log(test[0, 0]);
+        int[,] junk = level1Restrictions[direction.UP];
+        //Debug.Log(junk[0, 0]);
+        //Debug.Log(level1Restrictions[direction.UP]);
+        //Debug.Log(level1Restrictions.Count);
+        //Debug.Log(level1Restrictions[direction.UP].Length);
     }
     
 

@@ -16,10 +16,13 @@ public class Fruit : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        timer += Time.deltaTime;
-        if(timer >= 10)
+        if (!Pauser.S.paused)
         {
-            Destroy(gameObject);
+            timer += Time.deltaTime;
+            if (timer >= 10)
+            {
+                Destroy(gameObject);
+            }
         }
 	}
 }

@@ -1,19 +1,20 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 
-public class Blinky : MonoBehaviour
+public class Inky : MonoBehaviour
 {
-    public static Blinky S;
+
+    public static Inky S;
     Node node;
     Node target;
     public Vector3 goal = new Vector3();
-    bool overshot_target = true;   
+    bool overshot_target = true;
     float speed = 5;
     DirectionController directionScript;
     [HideInInspector]
     public ModeController modeScript;
+    direction initialDirection = direction.UP;
 
     private void Awake()
     {
@@ -25,32 +26,49 @@ public class Blinky : MonoBehaviour
     {
         directionScript = GetComponent<DirectionController>();
         modeScript = GetComponent<ModeController>();
-        //node = NodeGroup.S.nodelist[6];
-        //target = NodeGroup.S.nodelist[6];
-        node = NodeGroup.S.GetBlinkyStart();
-        target = NodeGroup.S.GetBlinkyStart();
+        node = NodeGroup.S.GetInkyStart();
+        target = NodeGroup.S.GetInkyStart().neighbors[initialDirection];
         transform.position = node.position;
-        //print("NEW BLINKY START: " + transform.position);
-        directionScript.current_direction = direction.LEFT;
-        directionScript.SetDirectionVector(direction.LEFT);
-        //print("Start direction: " + directionScript.dirvec);
+        directionScript.current_direction = initialDirection;
+        directionScript.SetDirectionVector(initialDirection);
+        directionScript.exitHome = false;
+        directionScript.guider.Clear();
+        directionScript.guider.Push(direction.LEFT);
+        directionScript.guider.Push(direction.UP);
+        directionScript.guider.Push(direction.RIGHT);
     }
 
     public void SetStartingConditions()
     {
-        node = NodeGroup.S.GetBlinkyStart();
-        target = NodeGroup.S.GetBlinkyStart();
-        transform.position = node.position;      
-        directionScript.current_direction = direction.LEFT;
-        directionScript.SetDirectionVector(direction.LEFT);
+        node = NodeGroup.S.GetInkyStart();
+        target = NodeGroup.S.GetInkyStart().neighbors[initialDirection];
+        transform.position = node.position;
+        directionScript.current_direction = initialDirection;
+        directionScript.SetDirectionVector(initialDirection);
         modeScript.AddStartMode();
+        directionScript.exitHome = false;
+        directionScript.guider.Clear();
+        directionScript.guider.Push(direction.LEFT);
+        directionScript.guider.Push(direction.UP);
+        directionScript.guider.Push(direction.RIGHT);
+        directionScript.startGuiding = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(!Pauser.S.paused)
+
+        if (!Pauser.S.paused)
         {
+            if(AccelerometerTilt.S.numPelletsEaten >= 30)
+            {
+                directionScript.exitHome = true;
+            }
+            
+            //print(modeScript.mode.name);
+            //print(directionScript.current_direction);
+            //print(directionScript.dirvec);
+            //print(" ");
             float dt = Time.deltaTime;
             directionScript.SetDirectionVector(directionScript.current_direction);
             Vector3 pos = transform.position;
@@ -80,6 +98,14 @@ public class Blinky : MonoBehaviour
             if (OvershotTarget())
             {
                 node = target;
+                if (directionScript.exitHome)
+                {
+                    if (target == NodeGroup.S.inkyStart)
+                    {
+                        directionScript.startGuiding = true;
+                        //print("Target: " + NodeGroup.S.inkyStart.position);
+                    }
+                }
                 if (node.portal)
                 {
                     node = node.portalNode;
@@ -90,16 +116,18 @@ public class Blinky : MonoBehaviour
                 {
                     if (transform.position == goal)
                     {
-                        //print("Blinky Made it home");
+                        //print("Inky Made it home");
                         modeScript.GetNextMode();
-                        directionScript.guider.Clear();
                         directionScript.guider.Push(direction.LEFT);
                         directionScript.guider.Push(direction.UP);
                         directionScript.startGuiding = true;
+
                     }
                 }
                 directionScript.GetValidDirections(node, modeScript);
+                
                 directionScript.GetClosestDirection(node, goal);
+                //print("D: " + directionScript.current_direction);
                 
 
                 if (node.neighbors.ContainsKey(directionScript.current_direction))
@@ -108,22 +136,23 @@ public class Blinky : MonoBehaviour
                 }
                 else
                 {
+                    //print("NONE");
                     transform.position = node.position;
                     directionScript.current_direction = direction.NONE;
                 }
                 /*
                 if (directionScript.guider.Count > 0 && directionScript.exitHome && directionScript.startGuiding)
                 {
-                    print("BLINKY");
+                    print("INKY");
                     print(directionScript.current_direction);
                     Pauser.S.paused = true;
                 }
                 */
             }
         }
-        
+
     }
-    
+
     bool OvershotTarget()
     {
         Vector3 vec1 = target.position - node.position;
@@ -132,16 +161,18 @@ public class Blinky : MonoBehaviour
         float node2Self = vec2.sqrMagnitude;
         return node2Self > node2Target;
     }
-    
-    
+
+
     public void SetScatterGoal()
     {
-        goal = new Vector3(24, 4, 0);
+        goal = new Vector3(27, -31, 0);
     }
 
     public void SetChaseGoal()
     {
-        goal = AccelerometerTilt.S.transform.position;
+        Vector3 vec1 = AccelerometerTilt.S.transform.position + AccelerometerTilt.S.dirvec * 32;
+        Vector3 vec2 = (vec1 - Blinky.S.transform.position) * 2;
+        goal = Blinky.S.transform.position + vec2;
     }
 
     public void SetRandomGoal()
@@ -157,7 +188,7 @@ public class Blinky : MonoBehaviour
 
     float ModifySpeed()
     {
-        if(node.portal || target.portal)
+        if (node.portal || target.portal)
         {
             return speed / 2.0f;
         }

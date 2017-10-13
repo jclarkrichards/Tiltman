@@ -17,11 +17,17 @@ public class DirectionController : MonoBehaviour
     public direction current_direction = direction.NONE;
     public Vector3 dirvec = new Vector3();
     List<direction> validDirections = new List<direction>();
+    [HideInInspector]
+    public bool exitHome;
+    public bool startGuiding = false;
+    public Stack<direction> guider = new Stack<direction>();
 
     // Use this for initialization
     void Awake ()
     {
         current_direction = direction.UP;
+        exitHome = true;     
+        //print("num elements in guider: " + guider.Count);
     }
 	
     // Converts the enum type to a vector
@@ -47,36 +53,54 @@ public class DirectionController : MonoBehaviour
     public void GetValidDirections(Node node, ModeController mode)
     {
         validDirections.Clear();
-        Dictionary<direction, Node>.KeyCollection keys = node.neighbors.Keys;
-        foreach (direction key in keys)
+        if (guider.Count > 0 && exitHome && startGuiding)
         {
-            if(!(node.homegate && key == direction.DOWN && mode.mode.name != ModeNames.SPAWN))
-            {
-                if (GetDirectionVector(key) != dirvec * -1)
-                {
-                    validDirections.Add(key);
-                }
-            }
-
-            
-
-
+            validDirections.Add(guider.Pop());
         }
-
-        if(validDirections.Count == 0)
+        else
         {
-            //print("ping pong");
+            Dictionary<direction, Node>.KeyCollection keys = node.neighbors.Keys;
             foreach (direction key in keys)
             {
-                if (GetDirectionVector(key) == dirvec * -1)
+                if (!(node.homegate && key == direction.DOWN && mode.mode.name != ModeNames.SPAWN))
                 {
-                    validDirections.Add(key);
-                    break;
-                }
+                    if (GetDirectionVector(key) != dirvec * -1)
+                    {
+                        if (exitHome)
+                        {
+                            if(!(node.restrictUP && key == direction.UP))
+                            {
+                                //print("DO NOT MOVE UP!");
+                                validDirections.Add(key);
+                            }
+                            
+                            
+                        }
+                        else
+                        {
+                            if (key != direction.LEFT && key != direction.RIGHT)
+                            {
+                                validDirections.Add(key);
+                            }
+                        }
 
+                    }
+                }
+            }
+
+            if (validDirections.Count == 0)
+            {
+                //print("ping pong");
+                foreach (direction key in keys)
+                {
+                    if (GetDirectionVector(key) == dirvec * -1)
+                    {
+                        validDirections.Add(key);
+                        break;
+                    }
+                }
             }
         }
-
     }
 
     // Choose a random direction from a List of directions
@@ -105,5 +129,13 @@ public class DirectionController : MonoBehaviour
         int index = distances.IndexOf(minVal);
         current_direction = validDirections[index];
 
+    }
+
+    public void ReverseDirection()
+    {
+        if(current_direction == direction.UP) { current_direction = direction.DOWN; }
+        else if(current_direction == direction.DOWN) { current_direction = direction.UP; }
+        else if(current_direction == direction.LEFT) { current_direction = direction.RIGHT; }   
+        else if(current_direction == direction.RIGHT) { current_direction = direction.LEFT; }
     }
 }

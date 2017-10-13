@@ -13,14 +13,18 @@ public class Node
     public Node portalNode = null;
     public bool spawnPoint = false;
     public bool homegate = false;
-   
+    public bool restrictUP;
+    public bool restrictDOWN;
+    public bool restrictLEFT;
+    public bool restrictRIGHT;
 
     public Node(float px, float py, int r, int c, Vector3 offset=new Vector3(), bool p=false)
     {
         row = r;
         col = c;
         portal = p;
-        position = new Vector3(px, -py, 0) + offset;       
+        position = new Vector3(px, -py, 0) + offset;
+        restrictUP = false;
     }
 
     public void AddNeighbor(Node node, direction D)

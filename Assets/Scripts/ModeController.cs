@@ -15,12 +15,14 @@ public class ModeController : MonoBehaviour
     Stack<Mode> modes = new Stack<Mode>();
     public Mode mode;
     float modeTimer = 0;
+    public bool reverse;
 
     // Use this for initialization
     void Start ()
     {
         SetupModeStack();
         mode = modes.Pop();
+        reverse = false;
     }
 	
 
@@ -55,7 +57,7 @@ public class ModeController : MonoBehaviour
     {
         if(mode.name != ModeNames.FREIGHT && mode.name != ModeNames.SPAWN)
         {
-            print("Not in Freight or spawn mode");
+            //print("Not in Freight or spawn mode");
             if(mode.time != 0)
             {
                 float dt = mode.time - modeTimer;
@@ -65,12 +67,13 @@ public class ModeController : MonoBehaviour
             {
                 modes.Push(new Mode(nameVar: mode.name));
             }
+            reverse = true;
             mode = new Mode(nameVar: ModeNames.FREIGHT, timeVar: 7, speedMultVar: 0.5f);
             modeTimer = 0;
         }
-        else
+        else if(mode.name == ModeNames.FREIGHT)
         {
-            print("In freight or spawn mode");
+            //print("In freight");
             mode = new Mode(nameVar: ModeNames.FREIGHT, timeVar: 7, speedMultVar: 0.5f);
             modeTimer = 0;
         }
