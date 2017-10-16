@@ -52,6 +52,7 @@ public class Blinky : MonoBehaviour
         if(!Pauser.S.paused)
         {
             float dt = Time.deltaTime;
+            ReverseDirection();
             directionScript.SetDirectionVector(directionScript.current_direction);
             Vector3 pos = transform.position;
             float speedMod = ModifySpeed();
@@ -92,10 +93,12 @@ public class Blinky : MonoBehaviour
                     {
                         //print("Blinky Made it home");
                         modeScript.GetNextMode();
+                        //print("MODE: " + modeScript.mode.name);
                         directionScript.guider.Clear();
                         directionScript.guider.Push(direction.LEFT);
                         directionScript.guider.Push(direction.UP);
                         directionScript.startGuiding = true;
+                        directionScript.exitHome = true;
                     }
                 }
                 directionScript.GetValidDirections(node, modeScript);
@@ -162,5 +165,29 @@ public class Blinky : MonoBehaviour
             return speed / 2.0f;
         }
         return speed * modeScript.mode.speedMult;
+    }
+
+    public void ReverseDirection()
+    {
+        if (modeScript.reverse)
+        {
+            directionScript.ReverseDirection();
+            Node temp = node;
+            node = target;
+            target = temp;
+            modeScript.reverse = false;
+        }
+    }
+
+    public void SetFreightMode()
+    {      
+        print("GUIDING: " + directionScript.startGuiding);
+        print("FREIGHT or SPAWN: " + modeScript.FreightOrSpawnMode());
+        if (!directionScript.startGuiding && !modeScript.FreightOrSpawnMode())
+        {
+            print("REVERSE BLINKY");
+            modeScript.reverse = true;
+        }
+        modeScript.SetFreightMode();
     }
 }

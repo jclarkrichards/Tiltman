@@ -55,7 +55,13 @@ public class DirectionController : MonoBehaviour
         validDirections.Clear();
         if (guider.Count > 0 && exitHome && startGuiding)
         {
+            //print("NEXT: " + guider.Peek());
             validDirections.Add(guider.Pop());
+            //Pauser.S.paused = true;
+            if(guider.Count == 0)
+            {
+                startGuiding = false;
+            }
         }
         else
         {
@@ -120,14 +126,21 @@ public class DirectionController : MonoBehaviour
     public void GetClosestDirection(Node node, Vector3 goal)
     {
         List<float> distances = new List<float>();
-        for (int i = 0; i < validDirections.Count; i++)
+        if (validDirections.Count > 1)
         {
-            Vector3 diffVec = node.position + GetDirectionVector(validDirections[i]) - goal;
-            distances.Add(diffVec.sqrMagnitude);
+            for (int i = 0; i < validDirections.Count; i++)
+            {
+                Vector3 diffVec = node.position + GetDirectionVector(validDirections[i]) - goal;
+                distances.Add(diffVec.sqrMagnitude);
+            }
+            float minVal = distances.Min();
+            int index = distances.IndexOf(minVal);
+            current_direction = validDirections[index];
         }
-        float minVal = distances.Min();
-        int index = distances.IndexOf(minVal);
-        current_direction = validDirections[index];
+        else
+        {
+            current_direction = validDirections[0];
+        }
 
     }
 

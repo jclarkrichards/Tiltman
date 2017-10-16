@@ -70,6 +70,7 @@ public class Clyde : MonoBehaviour
             //print(directionScript.dirvec);
             //print(" ");
             float dt = Time.deltaTime;
+            ReverseDirection();
             directionScript.SetDirectionVector(directionScript.current_direction);
             Vector3 pos = transform.position;
             float speedMod = ModifySpeed();
@@ -196,5 +197,28 @@ public class Clyde : MonoBehaviour
             return speed / 2.0f;
         }
         return speed * modeScript.mode.speedMult;
+    }
+
+    public void ReverseDirection()
+    {
+        if (modeScript.reverse)
+        {
+            directionScript.ReverseDirection();
+            Node temp = node;
+            node = target;
+            target = temp;
+            modeScript.reverse = false;
+        }
+    }
+
+    public void SetFreightMode()
+    {
+        
+        if (!directionScript.startGuiding && !modeScript.FreightOrSpawnMode())
+        {
+            print("Reverse Clyde");
+            modeScript.reverse = true;
+        }
+        modeScript.SetFreightMode();
     }
 }

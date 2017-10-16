@@ -46,8 +46,8 @@ public class ModeController : MonoBehaviour
         {
             if (modeTimer >= mode.time)
             {
-                mode = modes.Pop();
-                modeTimer = 0;
+                GetNextMode();
+                //modeTimer = 0;
                 //print(mode.name);
             }
         }
@@ -67,7 +67,7 @@ public class ModeController : MonoBehaviour
             {
                 modes.Push(new Mode(nameVar: mode.name));
             }
-            reverse = true;
+            //reverse = true;
             mode = new Mode(nameVar: ModeNames.FREIGHT, timeVar: 7, speedMultVar: 0.5f);
             modeTimer = 0;
         }
@@ -87,7 +87,13 @@ public class ModeController : MonoBehaviour
 
     public void GetNextMode()
     {
+        if(mode.name == ModeNames.CHASE || mode.name == ModeNames.SCATTER)
+        {
+            reverse = true;
+        }
         mode = modes.Pop();
+        modeTimer = 0;
+        
     }
 
     // If ghosts have to restart, add a scatter mode
@@ -95,5 +101,11 @@ public class ModeController : MonoBehaviour
     {
         mode = new Mode(nameVar: ModeNames.SCATTER, timeVar: 5);
         modeTimer = 0;
+    }
+
+    // Return true if ghost is in either freight or spawn mode.  This is just a convenience function
+    public bool FreightOrSpawnMode()
+    {
+        return mode.name == ModeNames.FREIGHT || mode.name == ModeNames.SPAWN;
     }
 }

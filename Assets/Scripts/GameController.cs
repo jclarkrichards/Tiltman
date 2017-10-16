@@ -6,8 +6,10 @@ public class GameController : MonoBehaviour
 {
     public static GameController S;
     public GameObject FruitPrefab;
+    public GameObject LifeIconPrefab;
     [HideInInspector]
     public GameObject fruit;
+    List<GameObject> lifeicons;
 
     private void Awake()
     {
@@ -20,7 +22,8 @@ public class GameController : MonoBehaviour
     // Use this for initialization
     void Start ()
     {
-		
+        //print("Pacman lives = " +AccelerometerTilt.S.lives);
+        CreateLifeIcons();
 	}
 	
 	// Update is called once per frame
@@ -40,5 +43,20 @@ public class GameController : MonoBehaviour
         Node node2 = node1.neighbors[direction.LEFT];
         Vector3 middle = (node1.position - node2.position) / 2;
         fruit.transform.position = node1.position - middle;
+    }
+
+    void CreateLifeIcons()
+    {
+        lifeicons = new List<GameObject>();
+        float row = 32;
+        float col = 0.5f;
+        for (int i = 0; i < AccelerometerTilt.S.lives; i++)
+        {
+            GameObject icon = Instantiate(LifeIconPrefab) as GameObject;           
+            icon.transform.position = new Vector3(col, -row, 0);
+            lifeicons.Add(icon);
+            col += 2;
+            
+        }
     }
 }

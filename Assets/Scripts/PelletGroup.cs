@@ -30,8 +30,9 @@ public class PelletGroup : MonoBehaviour
 		
 	}
 
-    void CreatePelletList()
+    public void CreatePelletList()
     {
+        pelletList.Clear();
         int rows = NodeGroup.S.levelArray.GetLength(0);
         int cols = NodeGroup.S.levelArray.GetLength(1);
         //print("ROWS AND COLS");

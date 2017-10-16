@@ -17,9 +17,12 @@ public class AccelerometerTilt : MonoBehaviour
     direction tiltDirection;
     bool overshot_target = true;
     float speed = 5;
+    public int lives = 5;
     float score = 0;
     float ghostScore = 200;
     public int numPelletsEaten = 0;
+    bool restartAfterPause = false;
+    bool restartWithNewPellets = false;
 
     private void Awake()
     {
@@ -66,6 +69,16 @@ public class AccelerometerTilt : MonoBehaviour
     {
         if(!Pauser.S.paused)
         {
+            if(restartAfterPause)
+            {
+                restartAfterPause = false;
+                lives--;
+                if(lives == -1)
+                {
+                    Pauser.S.pause = PauseType.gameover;
+                }
+                RestartLevel();              
+            }
             //print("UPDATING");
             //dirvec = GetDirectionVector(dir);
             //Vector3 pos = transform.position;
@@ -236,10 +249,14 @@ public class AccelerometerTilt : MonoBehaviour
                 {
                     //Power pellet so put ghost in FREIGHT mode
                     ghostScore = 200;
-                    Blinky.S.modeScript.SetFreightMode();
-                    Pinky.S.modeScript.SetFreightMode();
-                    Inky.S.modeScript.SetFreightMode();
-                    Clyde.S.modeScript.SetFreightMode();
+                    Blinky.S.SetFreightMode();
+                    Pinky.S.SetFreightMode();
+                    Inky.S.SetFreightMode();
+                    Clyde.S.SetFreightMode();
+                    //Blinky.S.modeScript.SetFreightMode();
+                    //Pinky.S.modeScript.SetFreightMode();
+                    //Inky.S.modeScript.SetFreightMode();
+                    //Clyde.S.modeScript.SetFreightMode();
                   
                 }
                 //print(score);
@@ -250,6 +267,9 @@ public class AccelerometerTilt : MonoBehaviour
                 if(PelletGroup.S.pelletList.Count == 0)
                 {
                     print("All pellets gone.  Restart the level or onto next level");
+                    Pauser.S.pause = PauseType.finish;
+                    restartAfterPause = true;
+                    restartWithNewPellets = true;
                 }
                 break;
             }
@@ -266,14 +286,18 @@ public class AccelerometerTilt : MonoBehaviour
                 Blinky.S.modeScript.SetRespawnMode();
                 score += ghostScore;
                 ghostScore *= 2;
+                //Pauser.S.gamePaused = true;
                 //print("Eat Blinky");
+                Pauser.S.pause = PauseType.munch;
             }
             else
             {
                 if(Blinky.S.modeScript.mode.name != ModeNames.SPAWN)
                 {
                     //print("Death by Blinky");
-                    RestartLevel();
+                    Pauser.S.pause = PauseType.death;
+                    restartAfterPause = true;
+                   
                 }
                 
             }
@@ -286,6 +310,8 @@ public class AccelerometerTilt : MonoBehaviour
                 Pinky.S.modeScript.SetRespawnMode();
                 score += ghostScore;
                 ghostScore *= 2;
+                //Pauser.S.gamePaused = true;
+                Pauser.S.pause = PauseType.munch;
                 //print("Eat Pinky");
             }
             else
@@ -293,7 +319,9 @@ public class AccelerometerTilt : MonoBehaviour
                 if(Pinky.S.modeScript.mode.name != ModeNames.SPAWN)
                 {
                     //print("Death by Pinky");
-                    RestartLevel();
+                    Pauser.S.pause = PauseType.death;
+                    restartAfterPause = true;
+                   
                 }
                 
             }
@@ -306,14 +334,17 @@ public class AccelerometerTilt : MonoBehaviour
                 Inky.S.modeScript.SetRespawnMode();
                 score += ghostScore;
                 ghostScore *= 2;
-                
+                //Pauser.S.gamePaused = true;
+                Pauser.S.pause = PauseType.munch;
             }
             else
             {
                 if (Inky.S.modeScript.mode.name != ModeNames.SPAWN)
                 {
                     //print("Death by Inky");
-                    RestartLevel();
+                    Pauser.S.pause = PauseType.death;
+                    restartAfterPause = true;
+                    
                 }
 
             }
@@ -326,14 +357,17 @@ public class AccelerometerTilt : MonoBehaviour
                 Clyde.S.modeScript.SetRespawnMode();
                 score += ghostScore;
                 ghostScore *= 2;
-               
+                //Pauser.S.gamePaused = true;
+                Pauser.S.pause = PauseType.munch;
             }
             else
             {
                 if (Clyde.S.modeScript.mode.name != ModeNames.SPAWN)
                 {
                     //print("Death by Clyde");
-                    RestartLevel();
+                    Pauser.S.pause = PauseType.death;
+                    restartAfterPause = true;
+                    
                 }
 
             }
@@ -379,6 +413,11 @@ public class AccelerometerTilt : MonoBehaviour
         if(GameController.S.fruit != null)
         {
             Destroy(GameController.S.fruit.gameObject);
+        }
+        if(restartWithNewPellets)
+        {
+            PelletGroup.S.CreatePelletList();
+            numPelletsEaten = 0;
         }
     }
 }

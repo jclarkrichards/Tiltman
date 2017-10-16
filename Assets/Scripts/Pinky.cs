@@ -15,6 +15,7 @@ public class Pinky : MonoBehaviour {
     public DirectionController directionScript;
     [HideInInspector]
     public ModeController modeScript;
+    bool tester = false;
 
     private void Awake()
     {
@@ -61,7 +62,16 @@ public class Pinky : MonoBehaviour {
             float speedMod = ModifySpeed();
             pos += directionScript.dirvec * speedMod * dt;
             transform.position = pos;
-
+            if(tester)
+            {
+                print("MODE: " + modeScript.mode.name);
+                print("DIRECTION: " + directionScript.current_direction);
+                print("D VEC: " + directionScript.dirvec);
+                print("ME: " + transform.position);
+                print("NODE: " + node.position);
+                print("TARGET: " + target.position);
+                print(" ");
+            }
             modeScript.ModeUpdate(dt);
             if (modeScript.mode.name == ModeNames.CHASE)
             {
@@ -97,6 +107,9 @@ public class Pinky : MonoBehaviour {
                     {
                         //print("Pinky Made it home");
                         modeScript.GetNextMode();
+                        //print("SPAWNED");
+                        //tester = true;
+                        //print("MODE: " + modeScript.mode.name);
                         directionScript.guider.Clear();
                         directionScript.guider.Push(direction.LEFT);
                         directionScript.guider.Push(direction.UP);
@@ -106,14 +119,24 @@ public class Pinky : MonoBehaviour {
 
                 directionScript.GetValidDirections(node, modeScript);
                 directionScript.GetClosestDirection(node, goal);
-                
+                //print(directionScript.current_direction);
 
                 if (node.neighbors.ContainsKey(directionScript.current_direction))
                 {
+                    
                     target = node.neighbors[directionScript.current_direction];
+                    if (tester)
+                    {
+                        print("Move in this direction");
+                        print("ME: " + transform.position);
+                        print("NODE: " + node.position);
+                        print("TARGET: " + target.position);
+                        print(" ");
+                    }
                 }
                 else
                 {
+                    print("cannot move in that direction for some reason");
                     transform.position = node.position;
                     directionScript.current_direction = direction.NONE;
                 }
@@ -177,11 +200,22 @@ public class Pinky : MonoBehaviour {
     {
         if (modeScript.reverse)
         {
+            //print("REVERSE");
             directionScript.ReverseDirection();
             Node temp = node;
             node = target;
             target = temp;
             modeScript.reverse = false;
         }
+    }
+
+    public void SetFreightMode()
+    {
+        
+        if(!directionScript.startGuiding && !modeScript.FreightOrSpawnMode())
+        {
+            modeScript.reverse = true;
+        }
+        modeScript.SetFreightMode();
     }
 }
