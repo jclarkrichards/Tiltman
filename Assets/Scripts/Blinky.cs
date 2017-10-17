@@ -181,11 +181,11 @@ public class Blinky : MonoBehaviour
 
     public void SetFreightMode()
     {      
-        print("GUIDING: " + directionScript.startGuiding);
-        print("FREIGHT or SPAWN: " + modeScript.FreightOrSpawnMode());
+        //print("GUIDING: " + directionScript.startGuiding);
+        //print("FREIGHT or SPAWN: " + modeScript.FreightOrSpawnMode());
         if (!directionScript.startGuiding && !modeScript.FreightOrSpawnMode())
         {
-            print("REVERSE BLINKY");
+            //print("REVERSE BLINKY");
             modeScript.reverse = true;
         }
         modeScript.SetFreightMode();

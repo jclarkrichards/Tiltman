@@ -73,6 +73,7 @@ public class AccelerometerTilt : MonoBehaviour
             {
                 restartAfterPause = false;
                 lives--;
+                GameController.S.RemoveLifeIcon();
                 if(lives == -1)
                 {
                     Pauser.S.pause = PauseType.gameover;
@@ -101,7 +102,7 @@ public class AccelerometerTilt : MonoBehaviour
                     //print(target.position);
                 }
             }
-            else // We are moving from a node to another node
+            else //We are moving from a node to another node
             {
                 Vector3 dircheck = GetDirectionVector(tiltDirection);
                 if (dircheck == dirvec * -1)
@@ -266,7 +267,7 @@ public class AccelerometerTilt : MonoBehaviour
                 Destroy(pellet);    
                 if(PelletGroup.S.pelletList.Count == 0)
                 {
-                    print("All pellets gone.  Restart the level or onto next level");
+                    //print("All pellets gone.  Restart the level or onto next level");
                     Pauser.S.pause = PauseType.finish;
                     restartAfterPause = true;
                     restartWithNewPellets = true;
@@ -395,9 +396,11 @@ public class AccelerometerTilt : MonoBehaviour
             float rSquared = Mathf.Pow((GetComponent<SphereCollider>().radius + GameController.S.fruit.GetComponent<SphereCollider>().radius), 2);
             if(dSquared <= rSquared)
             {
-                print("Eating the fruit");
+                //print("Eating the fruit");
                 score += GameController.S.fruit.GetComponent<Fruit>().points;
+                GameController.S.CollectFruit();
                 Destroy(GameController.S.fruit.gameObject);
+
             }
         }      
     }

@@ -4,24 +4,29 @@ using UnityEngine;
 
 public class Fruit : MonoBehaviour
 {
-
+    //public string name;
     float timer = 0;
     public int points = 200;
+    public bool ingame = true;
+
 	// Use this for initialization
 	void Start ()
     {
-		
+        //name = "general";
 	}
 	
 	// Update is called once per frame
 	void Update ()
     {
-        if (!Pauser.S.paused)
+        if (ingame)
         {
-            timer += Time.deltaTime;
-            if (timer >= 10)
+            if (!Pauser.S.paused)
             {
-                Destroy(gameObject);
+                timer += Time.deltaTime;
+                if (timer >= 10)
+                {
+                    Destroy(gameObject);
+                }
             }
         }
 	}

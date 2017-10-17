@@ -10,6 +10,7 @@ public class GameController : MonoBehaviour
     [HideInInspector]
     public GameObject fruit;
     List<GameObject> lifeicons;
+    public List<GameObject> fruitCollection;
 
     private void Awake()
     {
@@ -17,6 +18,7 @@ public class GameController : MonoBehaviour
         float newSize = 28 / (2f * Camera.main.aspect);
         Camera.main.orthographicSize = newSize;
         Camera.main.transform.position = new Vector3(13.5f, -newSize / 1.25f, -10);
+        fruitCollection = new List<GameObject>();
     }
 
     // Use this for initialization
@@ -29,7 +31,7 @@ public class GameController : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        if (AccelerometerTilt.S.numPelletsEaten == 10 && fruit == null)
+        if ((AccelerometerTilt.S.numPelletsEaten == 10 || AccelerometerTilt.S.numPelletsEaten == 40 || AccelerometerTilt.S.numPelletsEaten == 70) && fruit == null)
         {
             //print("Create the fruit");
             CreateFruit();
@@ -45,6 +47,7 @@ public class GameController : MonoBehaviour
         fruit.transform.position = node1.position - middle;
     }
 
+    //Draw the life icons in the lower left corner
     void CreateLifeIcons()
     {
         lifeicons = new List<GameObject>();
@@ -57,6 +60,39 @@ public class GameController : MonoBehaviour
             lifeicons.Add(icon);
             col += 2;
             
+        }
+    }
+
+    //Removes a life icon from back to front.  
+    public void RemoveLifeIcon()
+    {
+        GameObject removedIcon = lifeicons[lifeicons.Count-1];
+        bool removed = lifeicons.Remove(removedIcon);
+        if(removed)
+        {
+            Destroy(removedIcon);
+        }
+    }
+
+    // When eating fruit, display it in the bottom right corner
+    public void CollectFruit()
+    {
+        GameObject temp = Instantiate(FruitPrefab) as GameObject;
+        temp.GetComponent<Fruit>().ingame = false;
+        bool inCollection = false;
+        for(int i=0; i<fruitCollection.Count; i++)
+        {
+            if(fruitCollection[i].name == temp.name)
+            {
+                //inCollection = true;
+                break;
+            }
+        }
+        if(!inCollection)
+        {
+            float num = fruitCollection.Count;
+            temp.transform.position = new Vector3(26.5f-num*2, -32, 0);
+            fruitCollection.Add(temp);
         }
     }
 }
